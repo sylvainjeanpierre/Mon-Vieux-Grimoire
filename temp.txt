@@ -1,0 +1,32 @@
+[
+    {
+        userId: 'oeihfzeoi',
+        title: 'Livre de Maurice',
+        author: 'Maurice',
+        imageUrl: 'https://www.shutterstock.com/image-illustration/magic-book-open-pages-abstract-260nw-2186097033.jpg',
+        year: 1986,
+        genre: 'Nul à chier',
+        ratings: [
+            {
+                userId: 'oeihfzeoi',
+                grade: 2
+            }
+        ],
+        averageRating: 1
+    },
+    {
+        userId: 'oeihfzeoe',
+        title: 'Livre de Didier',
+        author: 'Didier',
+        imageUrl: 'https://www.shutterstock.com/image-illustration/magic-book-open-pages-abstract-260nw-2186097033.jpg',
+        year: 1987,
+        genre: 'Nul à chier',
+        ratings: [
+            {
+                userId: 'oeihfzeoe',
+                grade: 3
+            }
+        ],
+        averageRating: 1
+    },
+];
