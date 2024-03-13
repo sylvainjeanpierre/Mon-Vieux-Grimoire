@@ -10,7 +10,7 @@ exports.getBooks = (req, res, next) => {
 exports.getOneBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
     .then((book) => res.status(200).json(book))
-    .catch((error) => res.status(404).json({ error }));
+    .catch((error) => res.status(500).json({ error }));
 };
 
 exports.getTopRatedBooks = (req, res, next) => {
@@ -20,12 +20,31 @@ exports.getTopRatedBooks = (req, res, next) => {
     .then((books) => {
       res.status(200).json(books);
     })
-    .catch((error) => {
-      res.status(500).json({
-        error:
-          "Une erreur s'est produite lors de la récupération des livres les mieux notés.",
-      });
-    });
+    .catch((error) => res.status(500).json({ error }));
+};
+
+exports.addRate = (req, res, next) => {
+  Book.findOne({ _id: req.params.id })
+    .then((book) => {
+      // Add the new rate
+      book.ratings.push({ userId: req.body.userId, grade: req.body.rating });
+
+      // Calculate the average score
+      let totalRating = 0;
+      for (let i = 0; i < book.ratings.length; i++) {
+        totalRating += book.ratings[i].grade;
+      }
+      book.averageRating = totalRating / book.ratings.length;
+
+      // Save changes
+      book
+        .save()
+        .then(() => {
+          res.status(200).json({ message: "Note enregistrée avec succès" });
+        })
+        .catch((error) => res.status(500).json({ error }));
+    })
+    .catch((error) => res.status(500).json({ error }));
 };
 
 exports.createBook = (req, res, next) => {
