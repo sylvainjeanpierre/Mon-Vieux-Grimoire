@@ -13,6 +13,21 @@ exports.getOneBook = (req, res, next) => {
     .catch((error) => res.status(404).json({ error }));
 };
 
+exports.getTopRatedBooks = (req, res, next) => {
+  Book.find()
+    .sort({ rating: -1 })
+    .limit(3)
+    .then((books) => {
+      res.status(200).json(books);
+    })
+    .catch((error) => {
+      res.status(500).json({
+        error:
+          "Une erreur s'est produite lors de la récupération des livres les mieux notés.",
+      });
+    });
+};
+
 exports.createBook = (req, res, next) => {
   const bookData = JSON.parse(req.body.book);
   delete bookData.userId;
