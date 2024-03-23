@@ -3,7 +3,6 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
-
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
     createImagesDirIfNeeded(); // Call function to create 'images' directory if it doesn't exist
@@ -42,21 +41,34 @@ module.exports = (req, res, next) => {
 
     if (req.file) {
       const imagePath = path.join(__dirname, '..', 'images', req.file.filename);
-      sharp(imagePath)
-        .resize({ width: 800, height: 600 })
-        .toFile(path.join(__dirname, '..', 'images', 'compressed_' + req.file.filename), (err, info) => {
-          if (err) {
-            return res.status(500).json({ message: "Erreur de compression" });
-          }
+      const compressedImagePath = path.join(__dirname, '..', 'images', 'compressed_' + req.file.filename);
 
-          fs.unlink(imagePath, (unlinkErr) => {
-            if (unlinkErr) {
-              console.error("Erreur lors de la suppression du fichier original :", unlinkErr);
+      // Lire l'image originale
+      fs.readFile(imagePath, (readErr, data) => {
+        if (readErr) {
+          console.error("Erreur lors de la lecture du fichier original :", readErr);
+          return res.status(500).json({ message: "Erreur lors de la compression de l'image." });
+        }
+
+        // Compresser l'image
+        sharp(data)
+          .resize({ width: 800, height: 600 })
+          .toFile(compressedImagePath, (error) => {
+            if (error) {
+              console.error("Erreur lors de la compression de l'image :", error);
+              return res.status(500).json({ message: "Erreur lors de la compression de l'image." });
             }
-            req.file.filename = 'compressed_' + req.file.filename;
-            next();
+            
+            // Supprimer l'image originale après compression réussie
+            fs.unlink(imagePath, (unlinkErr) => {
+              if (unlinkErr) {
+                console.error("Erreur lors de la suppression du fichier original :", unlinkErr);
+              }
+              req.file.filename = 'compressed_' + req.file.filename;
+              next();
+            });
           });
-        });
+      });
     } else {
       next();
     }

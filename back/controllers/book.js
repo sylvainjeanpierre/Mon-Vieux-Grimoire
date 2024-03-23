@@ -9,7 +9,15 @@ exports.getBooks = (req, res, next) => {
 
 exports.getOneBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
-    .then((book) => res.status(200).json(book))
+    .then((book) => {
+      if (book) {
+        // rounding the average to one decimal place
+        book.averageRating = Math.round(book.averageRating * 10) / 10;
+        res.status(200).json(book);
+      } else {
+        res.status(404).json({ message: "Livre non trouvé" });
+      }
+    })
     .catch((error) => res.status(500).json({ error }));
 };
 
@@ -39,8 +47,9 @@ exports.addRate = (req, res, next) => {
       // Save changes
       book
         .save()
-        .then(() => {
-          res.status(200).json({ message: "Note enregistrée avec succès" });
+        .then((updatedBook) => {
+          updatedBook.averageRating = Math.round(updatedBook.averageRating * 10) / 10;
+          res.status(200).json(updatedBook);
         })
         .catch((error) => res.status(500).json({ error }));
     })
@@ -53,9 +62,8 @@ exports.createBook = (req, res, next) => {
   const book = new Book({
     ...bookData,
     userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${
-      req.file.filename
-    }`,
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename
+      }`,
   });
   book
     .save()
@@ -68,9 +76,8 @@ exports.updateOneBook = (req, res, next) => {
   if (req.file) {
     bookData = {
       ...JSON.parse(req.body.book),
-      imageUrl: `${req.protocol}://${req.get("host")}/images/${
-        req.file.filename
-      }`,
+      imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename
+        }`,
     };
   } else {
     bookData = { ...req.body };
