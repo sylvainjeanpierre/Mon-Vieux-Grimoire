@@ -23,7 +23,7 @@ exports.getOneBook = (req, res, next) => {
 
 exports.getTopRatedBooks = (req, res, next) => {
   Book.find()
-    .sort({ rating: -1 })
+    .sort({ averageRating: -1 })
     .limit(3)
     .then((books) => {
       res.status(200).json(books);

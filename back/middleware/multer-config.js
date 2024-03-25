@@ -43,32 +43,41 @@ module.exports = (req, res, next) => {
       const imagePath = path.join(__dirname, '..', 'images', req.file.filename);
       const compressedImagePath = path.join(__dirname, '..', 'images', 'compressed_' + req.file.filename);
 
-      // Lire l'image originale
-      fs.readFile(imagePath, (readErr, data) => {
-        if (readErr) {
-          console.error("Erreur lors de la lecture du fichier original :", readErr);
-          return res.status(500).json({ message: "Erreur lors de la compression de l'image." });
-        }
+      // Get the file size
+      const fileSize = fs.statSync(imagePath).size / (1024 * 1024);
 
-        // Compresser l'image
-        sharp(data)
-          .resize({ width: 800, height: 600 })
-          .toFile(compressedImagePath, (error) => {
-            if (error) {
-              console.error("Erreur lors de la compression de l'image :", error);
-              return res.status(500).json({ message: "Erreur lors de la compression de l'image." });
-            }
-            
-            // Supprimer l'image originale après compression réussie
-            fs.unlink(imagePath, (unlinkErr) => {
-              if (unlinkErr) {
-                console.error("Erreur lors de la suppression du fichier original :", unlinkErr);
+      // Check if the file size is greater than 1MB
+      if (fileSize > 1) {
+        // Lire l'image originale
+        fs.readFile(imagePath, (readErr, data) => {
+          if (readErr) {
+            console.error("Erreur lors de la lecture du fichier original :", readErr);
+            return res.status(500).json({ message: "Erreur lors de la compression de l'image." });
+          }
+
+          // Compresser l'image
+          sharp(data)
+            .resize({ width: 800, height: null })
+            .toFile(compressedImagePath, (error) => {
+              if (error) {
+                console.error("Erreur lors de la compression de l'image :", error);
+                return res.status(500).json({ message: "Erreur lors de la compression de l'image." });
               }
-              req.file.filename = 'compressed_' + req.file.filename;
-              next();
+              
+              // Supprimer l'image originale après compression réussie
+              fs.unlink(imagePath, (unlinkErr) => {
+                if (unlinkErr) {
+                  console.error("Erreur lors de la suppression du fichier original :", unlinkErr);
+                }
+                req.file.filename = 'compressed_' + req.file.filename;
+                next();
+              });
             });
-          });
-      });
+        });
+      } else {
+        // If the file size is not greater than 1MB, proceed without compression
+        next();
+      }
     } else {
       next();
     }
