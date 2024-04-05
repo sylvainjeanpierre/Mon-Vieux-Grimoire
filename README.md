@@ -66,3 +66,6 @@ Start the server
   node server
 ```
 
+## Screenshot
+
+![Screenshot](/screenshot.png)
